@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* 1. Alles Glatte abschalten */
+* {
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeSpeed !important;
+}
+
+/* 2. Zwanghafter Dirt-Hintergrund */
+body {
+  background-color: #333 !important;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAM1BMVEUAAABWTy9mXzxqYz15bz+Od0ONeEOTfEWXgEibg0qfh0yli06pjVCtlFSwmFW1nVi5n1m/qF/Dq2HErGLIr2PLsWTRtGjUuGzYum3cvXHfwHLiw3TlxXbnyHnpy3zqzH3rzX/szoDvzoHwz4Lx0IPy0YTy0obz04j01In11Yr21oz314742JD52ZH62pL725P83JT93ZX+3pb/35f///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') !important;
+  background-size: 64px !important;
+  image-rendering: pixelated !important;
+}
+
+/* 3. Minecraft UI Boxen (Roh und kantig) */
+.mc-panel {
+  background-color: #c6c6c6;
+  border: 2px solid #000;
+  box-shadow: inset 4px 4px 0px #fff, inset -4px -4px 0px #555;
+  color: #333;
+}
+
+.mc-button {
+  background-color: #c6c6c6;
+  border: 2px solid #000;
+  box-shadow: inset 4px 4px 0px #fff, inset -4px -4px 0px #555;
+  color: #333;
+  text-shadow: 2px 2px 0px #fff;
+  cursor: pointer;
+}
+
+.mc-button:active {
+  box-shadow: inset 4px 4px 0px #555, inset -4px -4px 0px #fff;
+  padding-top: 4px; /* Klick-Effekt */
+}
