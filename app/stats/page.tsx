@@ -2,122 +2,98 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
 
-// ALLE offiziellen Custom Statistics aus dem Minecraft Wiki
+// Genau deine gewünschten Kategorien
 const statCategories: Record<string, { label: string; unit: string }> = {
-  play_time: { label: "Spielzeit", unit: " min" },
+  play_time_minutes: { label: "Spielzeit", unit: "time" },
+  player_kills: { label: "Spieler Kills", unit: "" },
   deaths: { label: "Tode", unit: "" },
-  mob_kills: { label: "Mobs getötet", unit: "" },
-  player_kills: { label: "Spieler getötet", unit: "" },
-  jump: { label: "Gesprungen", unit: " mal" },
-  walk_one_cm: { label: "Distanz gelaufen", unit: " cm" },
-  sprint_one_cm: { label: "Distanz gesprintet", unit: " cm" },
-  crouch_one_cm: { label: "Distanz geschlichen", unit: " cm" },
-  swim_one_cm: { label: "Distanz geschwommen", unit: " cm" },
-  walk_on_water_one_cm: { label: "Auf Wasser gelaufen", unit: " cm" },
-  walk_under_water_one_cm: { label: "Unter Wasser gelaufen", unit: " cm" },
-  fall_one_cm: { label: "Distanz gefallen", unit: " cm" },
-  climb_one_cm: { label: "Distanz geklettert", unit: " cm" },
-  fly_one_cm: { label: "Distanz geflogen", unit: " cm" },
-  aviate_one_cm: { label: "Mit Elytra geflogen", unit: " cm" },
-  boat_one_cm: { label: "Distanz im Boot", unit: " cm" },
-  minecart_one_cm: { label: "Distanz im Minecart", unit: " cm" },
-  horse_one_cm: { label: "Distanz auf Pferd", unit: " cm" },
-  pig_one_cm: { label: "Distanz auf Schwein", unit: " cm" },
-  strider_one_cm: { label: "Distanz auf Schreiter", unit: " cm" },
-  damage_dealt: { label: "Schaden ausgeteilt", unit: " HP" },
-  damage_dealt_absorbed: { label: "Schaden ausgeteilt (absorbiert)", unit: " HP" },
-  damage_dealt_resisted: { label: "Schaden ausgeteilt (widerstanden)", unit: " HP" },
-  damage_taken: { label: "Schaden eingesteckt", unit: " HP" },
-  damage_blocked_by_shield: { label: "Schaden mit Schild geblockt", unit: " HP" },
-  damage_absorbed: { label: "Schaden absorbiert", unit: " HP" },
-  damage_resisted: { label: "Schaden widerstanden", unit: " HP" },
-  animals_bred: { label: "Tiere vermehrt", unit: "" },
-  fish_caught: { label: "Fische gefangen", unit: "" },
-  talked_to_villager: { label: "Mit Villagern geredet", unit: " mal" },
-  traded_with_villager: { label: "Mit Villagern gehandelt", unit: " mal" },
-  raid_trigger: { label: "Überfälle ausgelöst", unit: "" },
-  raid_win: { label: "Überfälle gewonnen", unit: "" },
-  sleep_in_bed: { label: "Im Bett geschlafen", unit: " mal" },
-  time_since_death: { label: "Zeit seit letztem Tod", unit: " min" },
-  time_since_rest: { label: "Zeit seit letztem Schlaf", unit: " min" },
-  sneak_time: { label: "Zeit geschlichen", unit: " min" },
-  total_world_time: { label: "Zeit in der Welt", unit: " min" },
-  leave_game: { label: "Spiel verlassen", unit: " mal" },
-  drop: { label: "Items gedroppt", unit: "" },
-  eat_cake_slice: { label: "Kuchenstücke gegessen", unit: "" },
-  enchant_item: { label: "Items verzaubert", unit: "" },
-  bell_ring: { label: "Glocke geläutet", unit: " mal" },
-  target_hit: { label: "Zielblock getroffen", unit: " mal" },
-  open_chest: { label: "Truhen geöffnet", unit: "" },
-  open_enderchest: { label: "Endertruhen geöffnet", unit: "" },
-  open_barrel: { label: "Fässer geöffnet", unit: "" },
-  open_shulker_box: { label: "Shulkerkisten geöffnet", unit: "" },
-  trigger_trapped_chest: { label: "Redstone-Truhen ausgelöst", unit: "" },
-  interact_with_crafting_table: { label: "Werkbank benutzt", unit: " mal" },
-  interact_with_furnace: { label: "Ofen benutzt", unit: " mal" },
-  interact_with_blast_furnace: { label: "Schmelzofen benutzt", unit: " mal" },
-  interact_with_smoker: { label: "Räucherofen benutzt", unit: " mal" },
-  interact_with_anvil: { label: "Amboss benutzt", unit: " mal" },
-  interact_with_enchanting_table: { label: "Zaubertisch benutzt", unit: " mal" },
-  interact_with_brewingstand: { label: "Braustand benutzt", unit: " mal" },
-  interact_with_beacon: { label: "Leuchtfeuer benutzt", unit: " mal" },
-  interact_with_campfire: { label: "Lagerfeuer benutzt", unit: " mal" },
-  interact_with_cartography_table: { label: "Kartentisch benutzt", unit: " mal" },
-  interact_with_grindstone: { label: "Schleifstein benutzt", unit: " mal" },
-  interact_with_lectern: { label: "Lesepult benutzt", unit: " mal" },
-  interact_with_loom: { label: "Webstuhl benutzt", unit: " mal" },
-  interact_with_smithing_table: { label: "Schmiedetisch benutzt", unit: " mal" },
-  interact_with_stonecutter: { label: "Steinsäge benutzt", unit: " mal" },
-  inspect_dispenser: { label: "Werfer durchsucht", unit: " mal" },
-  inspect_dropper: { label: "Spender durchsucht", unit: " mal" },
-  inspect_hopper: { label: "Trichter durchsucht", unit: " mal" },
-  fill_cauldron: { label: "Kessel gefüllt", unit: " mal" },
-  use_cauldron: { label: "Wasser aus Kessel genommen", unit: " mal" },
-  clean_armor: { label: "Lederrüstung gewaschen", unit: " mal" },
-  clean_banner: { label: "Banner gewaschen", unit: " mal" },
-  clean_shulker_box: { label: "Shulkerkiste gewaschen", unit: " mal" },
-  pot_flower: { label: "Blumen eingetopft", unit: "" },
-  play_noteblock: { label: "Notenblöcke gespielt", unit: "" },
-  tune_noteblock: { label: "Notenblöcke gestimmt", unit: "" },
-  play_record: { label: "Schallplatten abgespielt", unit: "" }
+  kd: { label: "K/D", unit: "kd" },
+  
+  // Strecken (alle einzeln)
+  dist_total: { label: "Strecke: Gesamt", unit: " Blöcke" },
+  dist_walked: { label: "Strecke: Gelaufen", unit: " Blöcke" },
+  dist_sprinted: { label: "Strecke: Gesprintet", unit: " Blöcke" },
+  dist_fallen: { label: "Strecke: Gefallen", unit: " Blöcke" },
+  dist_elytra: { label: "Strecke: Mit Elytren geflogen", unit: " Blöcke" },
+  dist_walk_on_water: { label: "Strecke: Auf Wasser gelaufen", unit: " Blöcke" },
+  dist_swum: { label: "Strecke: Geschwommen", unit: " Blöcke" },
+  dist_crouched: { label: "Strecke: Geschlichen", unit: " Blöcke" },
+  dist_walk_under_water: { label: "Strecke: Unter Wasser gelaufen", unit: " Blöcke" },
+  dist_climbed: { label: "Strecke: Geklettert", unit: " Blöcke" },
+
+  // Verallgemeinerte Stats
+  blocks_mined_total: { label: "Blöcke abgebaut (Gesamt)", unit: "" },
+  items_used_total: { label: "Items verwendet (Gesamt)", unit: "" },
+  entities_killed_total: { label: "Entities getötet (Gesamt)", unit: "" }
 };
 
+// Hilfsfunktion: Macht aus 305 Minuten -> "5 Stunden, 5 Minuten"
+function formatPlayTime(minutes: number) {
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hrs} Stunden, ${mins} Minuten`;
+}
+
+// Hilfsfunktion: Berechnet die K/D
+function calculateKD(kills: number, deaths: number) {
+  if (deaths === 0) return kills > 0 ? kills : 0;
+  return Number((kills / deaths).toFixed(2));
+}
+
 export default function Stats() {
-  const [activeTab, setActiveTab] = useState<string>('deaths');
+  const [activeTab, setActiveTab] = useState<string>('play_time_minutes');
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  async function loadStats() {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('player_stats')
-      .select('*');
-
-    if (error) {
-      console.error("Supabase Fehler:", error);
-    } else {
-      setPlayers(data || []);
-    }
-    setLoading(false);
-  }
-
   useEffect(() => {
+    async function loadStats() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('player_stats')
+        .select('*');
+
+      if (error) {
+        console.error("Supabase Fehler:", error);
+      } else {
+        setPlayers(data || []);
+      }
+      setLoading(false);
+    }
     loadStats();
   }, []);
 
-  // Summiert eine Spalte über alle Spieler hinweg (ignoriert null/undefined)
+  // Globale Server-Summen berechnen
   const getGlobalSum = (column: string) => {
-    return players.reduce((sum, player) => sum + Number(player[column] || 0), 0);
+    return players.reduce((sum, player) => sum + Number(player[column] ?? 0), 0);
   };
 
-  // Sortiert alle Spieler, auch wenn der Wert 0 ist
+  // Wert eines Spielers für die gewählte Kategorie holen (inkl. K/D-Sonderfall)
+  const getPlayerRawValue = (player: any, category: string) => {
+    if (category === 'kd') {
+      return calculateKD(Number(player.player_kills ?? 0), Number(player.deaths ?? 0));
+    }
+    return Number(player[category] ?? 0);
+  };
+
+  // Wert für die Anzeige hübsch formatieren
+  const formatDisplayValue = (rawValue: number, category: string) => {
+    const unit = statCategories[category]?.unit || '';
+    if (unit === 'time') return formatPlayTime(rawValue);
+    if (unit === 'kd') return rawValue.toLocaleString('de-DE');
+    return `${rawValue.toLocaleString('de-DE')}${unit}`;
+  };
+
+  // Rangliste sortieren (auch Spieler mit 0 werden sauber aufgelistet)
   const currentLeaderboard = [...players]
-    .sort((a, b) => Number(b[activeTab] ?? 0) - Number(a[activeTab] ?? 0))
-    .map((player, index) => ({
-      rank: index + 1,
-      name: player.player_name,
-      value: `${Number(player[activeTab] ?? 0).toLocaleString('de-DE')}${statCategories[activeTab]?.unit || ''}`
-    }));
+    .sort((a, b) => getPlayerRawValue(b, activeTab) - getPlayerRawValue(a, activeTab))
+    .map((player, index) => {
+      const rawVal = getPlayerRawValue(player, activeTab);
+      return {
+        rank: index + 1,
+        name: player.player_name,
+        value: formatDisplayValue(rawVal, activeTab)
+      };
+    });
 
   return (
     <main className="space-y-6">
@@ -134,35 +110,35 @@ export default function Stats() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs md:text-sm">
             <div className="flex flex-col">
               <span className="text-[#555]">Spielzeit Gesamt</span>
-              <span className="text-[#DDD] font-bold">{getGlobalSum('play_time').toLocaleString('de-DE')} min</span>
+              <span className="text-[#DDD] font-bold">{formatPlayTime(getGlobalSum('play_time_minutes'))}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#555]">Strecke Gesamt</span>
+              <span className="text-[#00AAAA] font-bold">{getGlobalSum('dist_total').toLocaleString('de-DE')} Blöcke</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#555]">Blöcke abgebaut</span>
+              <span className="text-[#DDD] font-bold">{getGlobalSum('blocks_mined_total').toLocaleString('de-DE')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#555]">Items verwendet</span>
+              <span className="text-[#FFAA00] font-bold">{getGlobalSum('items_used_total').toLocaleString('de-DE')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[#555]">Entities getötet</span>
+              <span className="text-[#00AA00] font-bold">{getGlobalSum('entities_killed_total').toLocaleString('de-DE')}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-[#555]">Tode Gesamt</span>
               <span className="text-[#AA0000] font-bold">{getGlobalSum('deaths').toLocaleString('de-DE')}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[#555]">Mobs Getötet</span>
-              <span className="text-[#00AA00] font-bold">{getGlobalSum('mob_kills').toLocaleString('de-DE')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[#555]">Gesprungen</span>
-              <span className="text-[#DDD] font-bold">{getGlobalSum('jump').toLocaleString('de-DE')} mal</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[#555]">Distanz Gelaufen</span>
-              <span className="text-[#DDD] font-bold">{getGlobalSum('walk_one_cm').toLocaleString('de-DE')} cm</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[#555]">Villager-Handel</span>
-              <span className="text-[#FFAA00] font-bold">{getGlobalSum('traded_with_villager').toLocaleString('de-DE')}</span>
-            </div>
           </div>
         </div>
 
-        {/* 2. Dropdown für alle Kategorien */}
+        {/* 2. Dropdown für die Kategorien */}
         <div className="mb-6 flex flex-col md:flex-row gap-4 items-center bg-[#8b8b8b] border-2 border-[#555] p-3">
           <label className="text-[#333] font-bold text-xs md:text-sm shrink-0" style={{ textShadow: "1px 1px 0px #fff" }}>
-            Statistik wählen ({Object.keys(statCategories).length}):
+            Statistik wählen:
           </label>
           <select 
             value={activeTab}
@@ -171,7 +147,7 @@ export default function Stats() {
           >
             {Object.entries(statCategories).map(([key, info]) => (
               <option key={key} value={key} className="bg-[#222] text-[#DDD]">
-                {info.label} ({key})
+                {info.label}
               </option>
             ))}
           </select>
