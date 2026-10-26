@@ -20,6 +20,8 @@ const statCategories: Record<string, { label: string; unit: string }> = {
   dist_crouched: { label: "Strecke: Geschlichen", unit: " Blöcke" },
   dist_walk_under_water: { label: "Strecke: Unter Wasser gelaufen", unit: " Blöcke" },
   dist_climbed: { label: "Strecke: Geklettert", unit: " Blöcke" },
+  dist_horse: { label: "Strecke: Auf Pferd geritten", unit: " Blöcke" },
+  dist_boat: { label: "Strecke: In Boot gefahren", unit: " Blöcke" },
 
   // Verallgemeinerte Stats
   blocks_mined_total: { label: "Blöcke abgebaut (Gesamt)", unit: "" },
